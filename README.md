@@ -69,7 +69,7 @@ Proyek ini dirancang dan dikembangkan oleh:
 
 * **Nama**: Hao Ran.
 * **GitHub**: [HaoRan-ID](https://github.com/HaoRan-ID)
-* **Portfolio**: [Kunjungi Portfolio](https://www.instagram.com/reiji.daiki/)
+* **Portfolio**: [Kunjungi Portfolio](linktr.ee/HaoRan.ID)
 
 ---
 

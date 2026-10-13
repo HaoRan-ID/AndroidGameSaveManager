@@ -52,19 +52,87 @@ namespace AndroidGameSaveManager.Services
         // ==========================================
 
         // Fungsi untuk mengambil folder save dari HP ke PC (Backup)
+        // Fungsi Backup dengan fitur Auto-Fallback (Mendukung Game Normal & Game Terproteksi seperti Ren'Py)
         public string PullSaveData(string androidPath, string pcDestinationPath)
         {
-            // Perintah ADB: adb pull "path_di_hp" "path_di_pc"
-            string arguments = $"pull \"{androidPath}\" \"{pcDestinationPath}\"";
-            return RunAdbCommand(arguments);
+            try
+            {
+                // 1. Coba cara standar terlebih dahulu
+                string arguments = $"pull \"{androidPath}\" \"{pcDestinationPath}\"";
+                string result = RunAdbCommand(arguments);
+
+                // 2. Cek apakah backup standar gagal / diblokir Scoped Storage (Ren'Py)
+                bool isFailedOrProtected = string.IsNullOrEmpty(result) ||
+                                           result.Contains("0 files pulled") ||
+                                           result.Contains("Permission denied") ||
+                                           result.Contains("does not exist");
+
+                if (isFailedOrProtected)
+                {
+                    // --- METODE BYPASS OTOMATIS KHUSUS REN'PY / SCOPED STORAGE ---
+                    string tempAndroidFolder = "/sdcard/Download/AGSM_TempSave";
+
+                    // Hapus folder sementara lama jika ada
+                    RunAdbCommand($"shell rm -rf \"{tempAndroidFolder}\"");
+
+                    // Salin dari folder terproteksi ke folder Download publik via shell
+                    RunAdbCommand($"shell cp -r \"{androidPath}\" \"{tempAndroidFolder}\"");
+
+                    // Pull dari folder Download publik ke PC
+                    result = RunAdbCommand($"pull \"{tempAndroidFolder}\" \"{pcDestinationPath}\"");
+
+                    // Bersihkan folder sementara di HP
+                    RunAdbCommand($"shell rm -rf \"{tempAndroidFolder}\"");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return "Error: " + ex.Message;
+            }
         }
 
         // Fungsi untuk mengirim folder save dari PC kembali ke HP (Restore)
-        public string PushSaveData(string pcSourcePath, string androidDestinationPath)
+        // Fungsi untuk mengirim folder save dari PC kembali ke HP (Restore) secara bersih
+        public string PushSaveData(string pcRootOrGamePath, string androidDestinationPath)
         {
-            // Perintah ADB: adb push "path_di_pc" "path_di_hp"
-            string arguments = $"push \"{pcSourcePath}\" \"{androidDestinationPath}\"";
-            return RunAdbCommand(arguments);
+            try
+            {
+                // 1. Ambil nama folder game dari path Android (Contoh: "Haoran" dari "/sdcard/Download/Haoran")
+                string cleanAndroidPath = androidDestinationPath.TrimEnd('/');
+                string gameFolderName = Path.GetFileName(cleanAndroidPath);
+
+                // 2. Deteksi path PC: Jika user memilih folder utama (C:\AGMS), 
+                // otomatis arahkan ke subfolder game-nya (C:\AGMS\Haoran)
+                string actualPcSource = pcRootOrGamePath;
+                if (!actualPcSource.EndsWith(gameFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    string combinedPath = Path.Combine(pcRootOrGamePath, gameFolderName);
+                    if (Directory.Exists(combinedPath))
+                    {
+                        actualPcSource = combinedPath;
+                    }
+                }
+
+                // 3. Ambil direktori induk (parent) dari path Android (Contoh: "/sdcard/Download")
+                int lastSlashIndex = cleanAndroidPath.LastIndexOf('/');
+                if (lastSlashIndex <= 0)
+                {
+                    return "Error: Path Android tujuan tidak valid!";
+                }
+                string androidParentDir = cleanAndroidPath.Substring(0, lastSlashIndex);
+
+                // 4. Jalankan adb push dari folder game PC langsung ke parent direktori Android
+                // Perintah: adb push "C:\AGMS\Haoran" "/sdcard/Download"
+                // Hasil di HP: /sdcard/Download/Haoran (Bersih tanpa folder AGMS!)
+                string arguments = $"push \"{actualPcSource}\" \"{androidParentDir}\"";
+                return RunAdbCommand(arguments);
+            }
+            catch (Exception ex)
+            {
+                return "Error: " + ex.Message;
+            }
         }
 
         public List<string> GetInstalledPackages()
@@ -89,6 +157,31 @@ namespace AndroidGameSaveManager.Services
             catch { }
             packages.Sort();
             return packages;
+        }
+        // =========================================================
+        // FITUR TAMBAHAN: BACKUP KHUSUS REN'PY / SCOPED STORAGE (ANDROID 11+)
+        // =========================================================
+        public string PullProtectedSaveData(string androidPath, string pcDestinationPath)
+        {
+            try
+            {
+                string tempAndroidFolder = "/sdcard/Download/AGSM_TempSave";
+
+                // 1. Salin folder terkunci ke folder Download publik
+                RunAdbCommand($"shell cp -r \"{androidPath}\" \"{tempAndroidFolder}\"");
+
+                // 2. Tarik data dari folder Download publik ke PC
+                string result = PullSaveData(tempAndroidFolder, pcDestinationPath);
+
+                // 3. Bersihkan folder sementara di HP
+                RunAdbCommand($"shell rm -rf \"{tempAndroidFolder}\"");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return "Error Bypass: " + ex.Message;
+            }
         }
     }
 }

@@ -139,7 +139,7 @@ namespace AndroidGameSaveManager.Views
             txtPcPath.BackColor = Color.FromArgb(35, 35, 48);
             txtPcPath.ForeColor = Color.White;
             txtPcPath.BorderStyle = BorderStyle.FixedSingle;
-            txtPcPath.Text = @"C:\BackupGame";
+            txtPcPath.Text = @"C:\AGSManager"; // <-- Pastikan di sini sudah @"C:\AGSManager"
 
             btnBrowse = new Button();
             btnBrowse.Text = "Browse";

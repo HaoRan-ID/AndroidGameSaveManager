@@ -39,7 +39,8 @@ namespace AndroidGameSaveManager.Views
 
         // Card 4: About / Informasi
         private Panel pnlAboutCard;
-        private Label lblAboutTitle, lblAppInfo;
+        private Label lblAboutTitle, lblAppInfo, lblDeveloper;
+        private LinkLabel lnkGitHub, lnkPortfolio;
 
         // Tombol Simpan Global
         private Button btnSaveSettings;
@@ -78,7 +79,7 @@ namespace AndroidGameSaveManager.Views
             pnlPathCard = CreateAccentedCard(new Point(20, 80), new Size(720, 155));
             pnlAutoCard = CreateAccentedCard(new Point(20, 245), new Size(720, 100));
             pnlDataCard = CreateAccentedCard(new Point(20, 355), new Size(720, 95));
-            pnlAboutCard = CreateAccentedCard(new Point(20, 460), new Size(720, 80));
+            pnlAboutCard = CreateAccentedCard(new Point(20, 460), new Size(720, 115)); // Diperbesar agar muat
 
             // ==========================================
             // KARTU 1: PATH & PENYIMPANAN - Konten
@@ -137,20 +138,34 @@ namespace AndroidGameSaveManager.Views
             pnlDataCard.Controls.AddRange(new Control[] { lblDataTitle, btnExportProfiles, btnImportProfiles, btnResetProfiles });
 
             // ==========================================
-            // KARTU 4: ABOUT / INFORMASI - Konten
+            // KARTU 4: ABOUT / INFORMASI (DIPERBARUI)
             // ==========================================
-            lblAboutTitle = new Label { Text = "Tentang Aplikasi", Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = _accentLineColor, Location = new Point(15, 12), AutoSize = true };
-            lblAppInfo = new Label { Text = "Android Game Save Manager v1.0.0 Stable\nPlatform: C# .NET 8.0 Windows Forms (Portable ADB Built-in)", Font = new Font("Segoe UI", 9F), ForeColor = Color.FromArgb(160, 160, 175), Location = new Point(15, 38), AutoSize = true };
-            pnlAboutCard.Controls.AddRange(new Control[] { lblAboutTitle, lblAppInfo });
+            lblAboutTitle = new Label { Text = "Tentang Aplikasi & Pengembang", Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = _accentLineColor, Location = new Point(15, 12), AutoSize = true };
+
+            lblDeveloper = new Label { Text = "Developer : Hao Ran.", Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(15, 38), AutoSize = true };
+
+            lblAppInfo = new Label { Text = "Android Game Save Manager v1.0.0 Stable (C# .NET 10.0 Windows Forms)", Font = new Font("Segoe UI", 9F), ForeColor = Color.FromArgb(160, 160, 175), Location = new Point(15, 62), AutoSize = true };
+
+            lnkGitHub = new LinkLabel { Text = "GitHub", Font = new Font("Segoe UI", 9F), LinkColor = Color.FromArgb(192, 132, 252), Location = new Point(15, 85), AutoSize = true };
+            lnkGitHub.LinkClicked += (s, e) => {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/HaoRan-ID") { UseShellExecute = true });
+            };
+
+            lnkPortfolio = new LinkLabel { Text = "Portfolio: Kunjungi Portfolio", Font = new Font("Segoe UI", 9F), LinkColor = Color.FromArgb(52, 211, 153), Location = new Point(245, 85), AutoSize = true };
+            lnkPortfolio.LinkClicked += (s, e) => {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.instagram.com/reiji.daiki/") { UseShellExecute = true }); // Ubah URL portfolio sesuai link Anda nanti
+            };
+
+            pnlAboutCard.Controls.AddRange(new Control[] { lblAboutTitle, lblDeveloper, lblAppInfo, lnkGitHub, lnkPortfolio });
 
             // ==========================================
             // TOMBOL SIMPAN GLOBAL SETTINGS
             // ==========================================
-            btnSaveSettings = new Button { Text = "Simpan Pengaturan", Location = new Point(20, 555), Size = new Size(180, 42), BackColor = Color.FromArgb(124, 58, 237), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnSaveSettings = new Button { Text = "Simpan Pengaturan", Location = new Point(20, 590), Size = new Size(180, 42), BackColor = Color.FromArgb(124, 58, 237), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
             btnSaveSettings.FlatAppearance.BorderSize = 0;
             btnSaveSettings.Click += BtnSaveSettings_Click;
 
-            lblStatusMsg = new Label { Text = "", Location = new Point(215, 565), Font = new Font("Segoe UI", 9.5F, FontStyle.Italic), ForeColor = Color.FromArgb(52, 211, 153), AutoSize = true };
+            lblStatusMsg = new Label { Text = "", Location = new Point(215, 600), Font = new Font("Segoe UI", 9.5F, FontStyle.Italic), ForeColor = Color.FromArgb(52, 211, 153), AutoSize = true };
 
             // Responsif Lebar Panel saat Resize Jendela
             this.Resize += (s, e) => {
@@ -182,25 +197,17 @@ namespace AndroidGameSaveManager.Views
             pnl.Size = size;
             pnl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pnl.BackColor = Color.FromArgb(24, 24, 35);
-            // Beri top-padding internal 4px (setebal garis) agar konten tidak tertutup garis
             pnl.Padding = new Padding(0, _accentLineThickness, 0, 0);
-
-            // Subscribe ke event Paint untuk menggambar garis aksen di atas kartu
             pnl.Paint += DrawAccentLine;
-
             return pnl;
         }
 
-        // Helper Event Method: Menggambar garis aksen di bagian paling atas panel
         private void DrawAccentLine(object sender, PaintEventArgs e)
         {
             Panel pnl = sender as Panel;
             if (pnl == null) return;
-
-            // Buat 'Pen' dengan warna aksen terang dan ketebalan yang ditentukan
             using (Pen accentPen = new Pen(_accentLineColor, _accentLineThickness))
             {
-                // Gambar garis lurus di koordinat y=0 (paling atas panel) melintasi seluruh lebar panel
                 e.Graphics.DrawLine(accentPen, 0, 0, pnl.Width, 0);
             }
         }
@@ -216,7 +223,7 @@ namespace AndroidGameSaveManager.Views
                     if (loaded != null) _settings = loaded;
                 }
             }
-            catch { /* Abaikan jika file corrupt/baru */ }
+            catch { }
         }
 
         private void BtnSaveSettings_Click(object sender, EventArgs e)

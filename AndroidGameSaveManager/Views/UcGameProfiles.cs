@@ -70,6 +70,15 @@ namespace AndroidGameSaveManager.Views
             lblName = new Label { Text = "Nama Game:", Location = new Point(labelX, 20), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = _accentLineColor, AutoSize = true };
             txtName = new TextBox { Location = new Point(inputX, 42), Size = new Size(420, 25), Font = new Font("Segoe UI", 9.5F), BackColor = Color.FromArgb(35, 35, 48), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
 
+            // TAMBAHKAN EVENT INI DI BAWAHNYA:
+            txtName.TextChanged += (s, e) => {
+                if (!string.IsNullOrEmpty(txtName.Text.Trim()))
+                {
+                    // Setiap nama game diketik, path PC otomatis menyesuaikan ke C:\AGSManager\NamaGame
+                    txtPc.Text = Path.Combine(@"C:\AGSManager", txtName.Text.Trim());
+                }
+            };
+
             lblAndroid = new Label { Text = "Path Folder Android:", Location = new Point(labelX, 82), Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = _accentLineColor, AutoSize = true };
 
             // Tombol Deteksi diposisikan di sebelah kanan sejajar dengan label Android
@@ -213,13 +222,14 @@ namespace AndroidGameSaveManager.Views
                             if (parts.Length > 0) txtName.Text = parts[parts.Length - 1];
                         }
 
+                        // TAMBAHKAN BARIS INI: Agar path PC otomatis terisi ke C:\AGSManager\NamaGame
+                        string gameNameForPath = string.IsNullOrEmpty(txtName.Text) ? "GameSave" : txtName.Text.Trim();
+                        txtPc.Text = Path.Combine(@"C:\AGSManager", gameNameForPath);
+
                         dlg.DialogResult = DialogResult.OK;
                         dlg.Close();
                     }
-                    else
-                    {
-                        MessageBox.Show("Silakan pilih salah satu package terlebih dahulu!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    // ...
                 };
 
                 dlg.Controls.AddRange(new Control[] { lblInfo, txtSearch, lstBox, btnSelect });

@@ -14,7 +14,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows-blue.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/Framework-.NET%208.0%20WinForms-purple.svg" alt=".NET 8">
+  <img src="https://img.shields.io/badge/Framework-.NET%2010.0%20WinForms-purple.svg" alt=".NET 10">
   <img src="https://img.shields.io/badge/Architecture-x64-brightgreen.svg" alt="x64">
   <img src="https://img.shields.io/badge/ADB-Bundled-orange.svg" alt="ADB Bundled">
 </p>
